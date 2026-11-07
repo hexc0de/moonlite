@@ -103,4 +103,6 @@ Detailed guides and technical references are available in the [`docs/`](./docs/)
 
 ## 📄 License
 
-MIT License. Designed and crafted for the 3D printing community.
+[MIT](./LICENSE) © Dzianis Tytsik. Designed and crafted for the 3D printing community.
+
+Bundled icons: [Lucide](https://lucide.dev) (ISC) and [Material Design Icons](https://pictogrammers.com) (Apache 2.0); notices in [`src/lib/icons.ts`](./src/lib/icons.ts).
