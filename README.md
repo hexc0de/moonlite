@@ -4,6 +4,8 @@
 
 Built on a **Sovol SV06 ACE** but usable with any Klipper + Moonraker printer, and aimed at embedded slicer webviews (like OrcaSlicer's Device tab), Moonlite delivers a Mainsail-style user experience with a deliberately small runtime footprint: no polling loops, bounded buffers and no charting libraries.
 
+![Moonlite dashboard: print status with recent files, temperatures, toolhead jog, extruder, camera, fans, Spoolman and G-code console](./docs/images/dashboard.webp)
+
 ---
 
 ## 🚀 Why Moonlite?
