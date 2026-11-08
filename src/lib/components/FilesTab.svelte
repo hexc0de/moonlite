@@ -207,7 +207,7 @@
         <div class="file-card" class:active-print={moonraker.state.print.filename === file.path}>
           <div class="thumb-container">
             {#if file.thumbnail}
-              <img src={file.thumbnail} alt="3D preview" class="thumb-img" />
+              <img src={file.thumbnail} alt={i18n.t('col_preview')} class="thumb-img" />
             {:else}
               <div class="thumb-fallback"><Icon name="model" /></div>
             {/if}

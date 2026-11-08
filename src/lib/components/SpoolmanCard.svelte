@@ -100,7 +100,7 @@
         </div>
 
         <!-- Authentic 3-Spoke 3D Printer Spool SVG Graphic -->
-        <div class="spool-graphic-wrap" title={`Color: ${colorHex}`}>
+        <div class="spool-graphic-wrap" title={`${i18n.t('spool_color')}: ${colorHex}`}>
           <svg width="56" height="56" viewBox="0 0 100 100" class="spool-svg">
             <!-- Outer spool rim -->
             <circle cx="50" cy="50" r="48" fill="#2d3038" stroke="#3d424e" stroke-width="2" />

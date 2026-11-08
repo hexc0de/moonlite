@@ -416,7 +416,7 @@
                 {@const val = chartMetric === 'filament' ? bar.filamentM : bar.timeH}
                 {@const maxVal = chartMetric === 'filament' ? dailyStats.maxFilament : dailyStats.maxTime}
                 {@const heightPct = Math.min(100, Math.max(10, Math.round((val / maxVal) * 85)))}
-                <div class="bar-col" title={`${bar.label}: ${chartMetric === 'filament' ? `${bar.filamentM.toFixed(1)}m` : `${bar.timeH.toFixed(1)}h`} (${bar.count} jobs)`}>
+                <div class="bar-col" title={`${bar.label}: ${chartMetric === 'filament' ? `${bar.filamentM.toFixed(1)}m` : `${bar.timeH.toFixed(1)}h`} (${i18n.t('jobs_count', { count: bar.count })})`}>
                   <div class="bar-track">
                     <div 
                       class="bar-fill" 
@@ -523,7 +523,7 @@
                 <!-- 1. 3D Model Thumbnail -->
                 <td class="td-preview">
                   {#if thumbUrl}
-                    <img src={thumbUrl} alt="Thumbnail" class="job-thumb" />
+                    <img src={thumbUrl} alt={i18n.t('col_preview')} class="job-thumb" />
                   {:else}
                     <div class="thumb-placeholder"><Icon name="model" /></div>
                   {/if}

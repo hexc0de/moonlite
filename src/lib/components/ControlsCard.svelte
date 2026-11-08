@@ -95,7 +95,7 @@
         class="ext-btn retract" 
         disabled={isLocked} 
         onclick={handleRetract}
-        title="Retract filament"
+        title={i18n.t('hint_retract')}
       >
         <Icon name="arrow-up" /> {i18n.t('retract')}
       </button>
@@ -103,7 +103,7 @@
         class="ext-btn extrude" 
         disabled={isLocked} 
         onclick={handleExtrude}
-        title="Extrude filament"
+        title={i18n.t('hint_extrude')}
       >
         <Icon name="arrow-down" /> {i18n.t('extrude')}
       </button>

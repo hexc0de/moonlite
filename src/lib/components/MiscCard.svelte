@@ -64,7 +64,7 @@
           class:active={cameralight}
           onclick={() => moonraker.toggleCameralight()}
         >
-          {cameralight ? 'ON' : 'OFF'}
+          {cameralight ? i18n.t('switch_on') : i18n.t('switch_off')}
         </button>
       </div>
     </div>
@@ -100,8 +100,8 @@
       <div class="macros-title">{i18n.t('quick_macros')}</div>
       <div class="macro-btns">
         <button class="m-btn" disabled={machineLocked} onclick={() => moonraker.machineGcode('Z_TILT_ADJUST')}>Z-TILT</button>
-        <button class="m-btn" disabled={machineLocked} onclick={() => moonraker.machineGcode('BED_MESH_CALIBRATE')}>Bed Mesh</button>
-        <button class="m-btn" disabled={machineLocked} onclick={() => moonraker.motorsOff()}>Motors Off</button>
+        <button class="m-btn" disabled={machineLocked} onclick={() => moonraker.machineGcode('BED_MESH_CALIBRATE')}>{i18n.t('nav_bedmesh')}</button>
+        <button class="m-btn" disabled={machineLocked} onclick={() => moonraker.motorsOff()}>{i18n.t('motors_off_short')}</button>
       </div>
     </div>
   </div>

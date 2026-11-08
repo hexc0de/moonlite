@@ -37,7 +37,7 @@
       <h3><Icon name="move" /> {i18n.t('toolhead')}</h3>
     </div>
     {#if isLocked}
-      <span class="lock-indicator" title="Movement disabled during active printing">
+      <span class="lock-indicator" title={i18n.t('hint_locked_moves')}>
         <Icon name="lock" /> {i18n.t('locked_printing')}
       </span>
     {/if}
@@ -61,16 +61,16 @@
 
   <!-- Homing & Align buttons -->
   <div class="home-actions-bar">
-    <button class="home-btn home-all wide" disabled={isLocked} onclick={() => home()} title="Home All (G28)">
+    <button class="home-btn home-all wide" disabled={isLocked} onclick={() => home()} title={i18n.t('home_all')}>
       <Icon name="home" /> ALL
     </button>
-    <button class="home-btn wide" disabled={machineLocked} onclick={zTilt} title="Z-Tilt Adjust">
+    <button class="home-btn wide" disabled={machineLocked} onclick={zTilt} title={i18n.t('hint_ztilt')}>
       <Icon name="level" /> Z-TILT
     </button>
     <button class="home-btn" disabled={isLocked} onclick={() => home('x')}>X</button>
     <button class="home-btn" disabled={isLocked} onclick={() => home('y')}>Y</button>
     <button class="home-btn" disabled={isLocked} onclick={() => home('z')}>Z</button>
-    <button class="home-btn motors-off" disabled={machineLocked} onclick={() => moonraker.motorsOff()} title="M84">
+    <button class="home-btn motors-off" disabled={machineLocked} onclick={() => moonraker.motorsOff()} title={i18n.t('motors_off')}>
       M84
     </button>
   </div>

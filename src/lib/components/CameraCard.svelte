@@ -96,7 +96,7 @@
             class="mode-btn" 
             class:active={mode === 'snapshot'} 
             onclick={() => { mode = 'snapshot'; startSnapshotLoop(); }}
-            title="Snapshot mode"
+            title={i18n.t('hint_snapshot_mode')}
           >
             {i18n.t('snapshot')}
           </button>
@@ -104,7 +104,7 @@
             class="mode-btn" 
             class:active={mode === 'stream'} 
             onclick={() => { mode = 'stream'; stopSnapshotLoop(); }}
-            title="Live video stream"
+            title={i18n.t('hint_live_stream')}
           >
             {i18n.t('live_stream')}
           </button>
@@ -126,7 +126,7 @@
       {#if mode === 'stream'}
         <img 
           src={fullStreamUrl} 
-          alt="Printer Camera Stream" 
+          alt={i18n.t('alt_camera')} 
           class="camera-frame"
           class:hidden={imageError}
           onload={() => (imageError = false)}
@@ -135,7 +135,7 @@
       {:else}
         <img 
           src={fullSnapshotUrl} 
-          alt="Printer Camera Snapshot" 
+          alt={i18n.t('alt_camera')} 
           class="camera-frame"
           class:hidden={imageError}
           onload={() => (imageError = false)}

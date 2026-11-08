@@ -151,7 +151,7 @@
     <div class="title-with-icon">
       <h3><Icon name="flame" /> {i18n.t('temperatures')}</h3>
     </div>
-    <button class="cooldown-btn" onclick={cooldown} title="Turn off all heaters (M104 S0, M140 S0)">
+    <button class="cooldown-btn" onclick={cooldown} title={i18n.t('hint_cooldown')}>
       <Icon name="snowflake" /> {i18n.t('cooldown')}
     </button>
   </div>

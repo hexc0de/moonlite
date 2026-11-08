@@ -62,7 +62,7 @@
       {:else}
         <div class="host-editor">
           <input type="text" bind:value={inputHost} placeholder={i18n.t('host_auto_placeholder')} class="input-mini" onkeydown={(e) => e.key === 'Enter' && saveHost()} />
-          <input type="text" bind:value={inputPort} placeholder="Port" class="input-mini port" onkeydown={(e) => e.key === 'Enter' && saveHost()} />
+          <input type="text" bind:value={inputPort} placeholder={i18n.t('port_placeholder')} class="input-mini port" onkeydown={(e) => e.key === 'Enter' && saveHost()} />
           <button class="btn btn-primary btn-xs" onclick={saveHost}>OK</button>
           <button class="btn btn-secondary btn-xs" onclick={() => isEditingHost = false}><Icon name="close" /></button>
         </div>
@@ -77,7 +77,7 @@
         class="lang-trigger" 
         class:open={isLangOpen}
         onclick={(e) => { e.stopPropagation(); isLangOpen = !isLangOpen; }}
-        title="Select Language"
+        title={i18n.t('hint_language')}
       >
         <Icon name="globe" size={16} />
         <span class="lang-cur">{i18n.locale.toUpperCase()}</span>
@@ -103,7 +103,7 @@
     </div>
 
     <!-- Safety Lock Switch -->
-    <label class="safety-toggle" title="Prevents accidental moves during print">
+    <label class="safety-toggle" title={i18n.t('hint_safety_lock')}>
       <input type="checkbox" bind:checked={moonraker.safetyLock} />
       <span class="safety-label">
         {#if moonraker.safetyLock}
@@ -114,7 +114,7 @@
       </span>
     </label>
 
-    <button class="btn btn-danger" onclick={handleEmergencyStop} title="Emergency Stop (M112)">
+    <button class="btn btn-danger" onclick={handleEmergencyStop} title={i18n.t('hint_estop')}>
       <Icon name="emergency" /> {i18n.t('emergency_stop')}
     </button>
   </div>

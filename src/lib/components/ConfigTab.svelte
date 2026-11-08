@@ -163,7 +163,7 @@
           class="btn btn-warning btn-sm" 
           disabled={saving || printActive || !selectedFile} 
           onclick={() => saveFile(true)}
-          title="FIRMWARE_RESTART"
+          title={i18n.t('hint_firmware_restart')}
         >
           <Icon name="restart" /> {i18n.t('save_and_restart')}
         </button>

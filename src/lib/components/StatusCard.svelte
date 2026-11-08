@@ -192,7 +192,7 @@
       <div class="header-status">
         <span class="status-name {stateColorClass}">{stateLabel}</span>
         {#if print.state === 'printing' && remainingTime > 0}
-          <span class="sub-eta">ETA: {etaString}</span>
+          <span class="sub-eta">{i18n.t('stat_eta')}: {etaString}</span>
         {/if}
       </div>
     </div>
@@ -263,7 +263,7 @@
             >
               <div class="recent-thumb-box">
                 {#if file.thumbnail}
-                  <img src={file.thumbnail} alt="Thumbnail" class="recent-thumb-img" />
+                  <img src={file.thumbnail} alt={i18n.t('col_preview')} class="recent-thumb-img" />
                 {:else}
                   <div class="recent-thumb-fallback"><Icon name="model" /></div>
                 {/if}
@@ -297,7 +297,7 @@
     <!-- ACTIVE / PAUSED / COMPLETED PRINT VIEW -->
     {#if print.thumbnail}
       <div class="model-preview-card">
-        <img src={print.thumbnail} alt="3D Model Preview" class="model-preview-img" />
+        <img src={print.thumbnail} alt={i18n.t('col_preview')} class="model-preview-img" />
       </div>
     {/if}
 
