@@ -17,9 +17,16 @@
   import Dialogs from './lib/components/Dialogs.svelte';
   import { i18n } from './lib/i18n.svelte';
   import { ui } from './lib/ui.svelte';
+  import { printCounts } from './lib/printCounts.svelte';
+  import { untrack } from 'svelte';
 
   type Tab = 'dashboard' | 'files' | 'history' | 'bedmesh' | 'config';
   let currentTab = $state<Tab>('dashboard');
+
+  // Per-file print counters: recounted from the job history on every (re)connect.
+  $effect(() => {
+    if (moonraker.connected) untrack(() => printCounts.load());
+  });
 
   const logoUrl = `${import.meta.env.BASE_URL}favicon.svg`;
 

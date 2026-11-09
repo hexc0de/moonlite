@@ -242,6 +242,7 @@ class MoonrakerClient {
     loading: false,
   });
 
+  private historyListeners = new Set<(event: { action: string; job?: any }) => void>();
   private objects: PeripheralObjects = { light: null, heaterFan: null, controllerFan: null, filamentSensor: null };
   private reqId = 1;
   private pending = new Map<
@@ -263,6 +264,12 @@ class MoonrakerClient {
     this.port = target.port;
     this.autoHost = target.auto;
     this.connect();
+  }
+
+  /** Subscribe to notify_history_changed ({action: 'added' | 'finished', job}); returns an unsubscribe function. */
+  onHistoryChanged(fn: (event: { action: string; job?: any }) => void): () => void {
+    this.historyListeners.add(fn);
+    return () => this.historyListeners.delete(fn);
   }
 
   // --- Addressing -----------------------------------------------------------
@@ -578,6 +585,11 @@ class MoonrakerClient {
       case 'notify_spoolman_status_changed':
         this.fetchSpoolmanData();
         break;
+      case 'notify_history_changed': {
+        const [event] = msg.params ?? [];
+        if (event) this.historyListeners.forEach((fn) => fn(event));
+        break;
+      }
       case 'notify_filelist_changed':
         if (this.filesTimer) clearTimeout(this.filesTimer);
         this.filesTimer = setTimeout(() => {

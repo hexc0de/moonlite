@@ -4,6 +4,11 @@
   import { moonraker } from '../moonraker.svelte';
   import { i18n } from '../i18n.svelte';
   import { ui, errorMessage } from '../ui.svelte';
+  import { printCounts } from '../printCounts.svelte';
+  import { ColumnSet } from '../columns.svelte';
+  import ColumnPicker from './ColumnPicker.svelte';
+  import MaterialTag from './MaterialTag.svelte';
+  import PrintCount from './PrintCount.svelte';
 
   interface GcodeFile {
     path: string;
@@ -11,16 +16,33 @@
     size: number;
     estimated_time?: number;
     thumbnail?: string;
+    filament_type?: string;
+    filament_colors?: string[];
+    filament_total?: number;
+    filament_weight?: number;
+    layer_height?: number;
+    slicer?: string;
   }
 
   const GCODE_EXT = /\.(gcode|gco|g)$/i;
-  const METADATA_BATCH = 40;
+
+  // Optional table columns (preview, filename and actions are always shown).
+  const columns = new ColumnSet('moonlite_cols_files', [
+    { id: 'prints', label: 'col_prints' },
+    { id: 'material', label: 'col_material' },
+    { id: 'layer', label: 'col_layer', visible: false },
+    { id: 'filament', label: 'col_filament_plan' },
+    { id: 'est', label: 'col_est_time' },
+    { id: 'slicer', label: 'col_slicer', visible: false },
+    { id: 'size', label: 'col_size' },
+    { id: 'modified', label: 'col_modified' },
+  ]);
 
   let files = $state<GcodeFile[]>([]);
   let loading = $state(false);
   let uploading = $state(false);
   let searchQuery = $state('');
-  let sortBy = $state<'date' | 'name' | 'size'>('date');
+  let sortBy = $state<'date' | 'name' | 'size' | 'prints'>('date');
   let printActive = $derived(moonraker.isPrintActive);
 
   // Paths whose metadata was already requested (avoids refetching on every re-sort/search).
@@ -58,6 +80,12 @@
         if (meta && f) {
           f.estimated_time = meta.estimated_time;
           f.thumbnail = moonraker.thumbnailUrl(path, meta.thumbnails, 'small');
+          f.filament_type = meta.filament_type;
+          f.filament_colors = meta.filament_colors;
+          f.filament_total = meta.filament_total;
+          f.filament_weight = meta.filament_weight_total;
+          f.layer_height = meta.layer_height;
+          f.slicer = meta.slicer;
         }
       } catch (e) {
         // metadata optional
@@ -81,13 +109,16 @@
       list.sort((a, b) => a.path.localeCompare(b.path));
     } else if (sortBy === 'size') {
       list.sort((a, b) => b.size - a.size);
+    } else if (sortBy === 'prints') {
+      const done = (f: GcodeFile) => printCounts.counts[f.path]?.completed ?? 0;
+      list.sort((a, b) => done(b) - done(a) || b.modified - a.modified);
     }
     return list;
   });
 
+  // Metadata is fetched one file at a time, in the order the user sees the list.
   $effect(() => {
     const pending = filteredFiles
-      .slice(0, METADATA_BATCH)
       .map((f) => f.path)
       .filter((p) => !metaRequested.has(p));
     if (pending.length === 0) return;
@@ -184,7 +215,10 @@
         <button class="sort-btn" class:active={sortBy === 'date'} onclick={() => sortBy = 'date'}>{i18n.t('sort_date')}</button>
         <button class="sort-btn" class:active={sortBy === 'name'} onclick={() => sortBy = 'name'}>{i18n.t('sort_name')}</button>
         <button class="sort-btn" class:active={sortBy === 'size'} onclick={() => sortBy = 'size'}>{i18n.t('sort_size')}</button>
+        <button class="sort-btn" class:active={sortBy === 'prints'} onclick={() => sortBy = 'prints'}>{i18n.t('col_prints')}</button>
       </div>
+
+      <ColumnPicker {columns} />
 
       <label class="btn btn-primary btn-upload" class:busy={uploading}>
         <Icon name="upload" /> {uploading ? i18n.t('uploading') : i18n.t('upload_gcode')}
@@ -202,56 +236,99 @@
   {:else if filteredFiles.length === 0}
     <div class="empty-state">{i18n.t('no_files')}</div>
   {:else}
-    <div class="files-grid">
-      {#each filteredFiles as file (file.path)}
-        <div class="file-card" class:active-print={moonraker.state.print.filename === file.path}>
-          <div class="thumb-container">
-            {#if file.thumbnail}
-              <img src={file.thumbnail} alt={i18n.t('col_preview')} class="thumb-img" />
-            {:else}
-              <div class="thumb-fallback"><Icon name="model" /></div>
-            {/if}
-          </div>
+    <div class="table-responsive">
+      <table class="files-table">
+        <thead>
+          <tr>
+            <th class="th-preview">{i18n.t('col_preview')}</th>
+            <th>{i18n.t('col_filename')}</th>
+            {#if columns.has('prints')}<th>{i18n.t('col_prints')}</th>{/if}
+            {#if columns.has('material')}<th>{i18n.t('col_material')}</th>{/if}
+            {#if columns.has('layer')}<th>{i18n.t('col_layer')}</th>{/if}
+            {#if columns.has('filament')}<th>{i18n.t('col_filament_plan')}</th>{/if}
+            {#if columns.has('est')}<th>{i18n.t('col_est_time')}</th>{/if}
+            {#if columns.has('slicer')}<th>{i18n.t('col_slicer')}</th>{/if}
+            {#if columns.has('size')}<th>{i18n.t('col_size')}</th>{/if}
+            {#if columns.has('modified')}<th>{i18n.t('col_modified')}</th>{/if}
+            <th class="text-right">{i18n.t('col_actions')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each filteredFiles as file (file.path)}
+            <tr class="file-row" class:active-print={moonraker.state.print.filename === file.path}>
+              <td class="td-preview">
+                {#if file.thumbnail}
+                  <img src={file.thumbnail} alt={i18n.t('col_preview')} class="thumb-img" />
+                {:else}
+                  <div class="thumb-fallback"><Icon name="model" /></div>
+                {/if}
+              </td>
 
-          <div class="file-details">
-            <div class="file-title" title={file.path}>
-              {file.path}
-            </div>
+              <td class="td-filename">
+                <div class="file-title" title={file.path}>{file.path}</div>
+              </td>
 
-            <div class="file-meta">
-              <span>{formatSize(file.size)}</span>
-              <span>•</span>
-              <span>{formatDate(file.modified)}</span>
-              {#if file.estimated_time}
-                <span>•</span>
-                <span class="est-badge"><Icon name="clock" /> {formatDuration(file.estimated_time)}</span>
+              {#if columns.has('prints')}
+                <td><PrintCount filename={file.path} /></td>
               {/if}
-            </div>
-          </div>
+              {#if columns.has('material')}
+                <td><MaterialTag type={file.filament_type} colors={file.filament_colors} /></td>
+              {/if}
+              {#if columns.has('layer')}
+                <td class="font-mono">{file.layer_height ? `${file.layer_height} mm` : '—'}</td>
+              {/if}
+              {#if columns.has('filament')}
+                <td class="font-mono">
+                  {#if file.filament_weight}
+                    <div>{file.filament_weight.toFixed(1)} g</div>
+                  {/if}
+                  {#if file.filament_total}
+                    <div class="text-muted sub">{(file.filament_total / 1000).toFixed(2)} m</div>
+                  {:else if !file.filament_weight}
+                    <span class="text-muted">—</span>
+                  {/if}
+                </td>
+              {/if}
+              {#if columns.has('est')}
+                <td class="font-mono est">{file.estimated_time ? formatDuration(file.estimated_time) : '—'}</td>
+              {/if}
+              {#if columns.has('slicer')}
+                <td class="text-muted">{file.slicer ?? '—'}</td>
+              {/if}
+              {#if columns.has('size')}
+                <td class="font-mono text-muted">{formatSize(file.size)}</td>
+              {/if}
+              {#if columns.has('modified')}
+                <td class="font-mono text-muted">{formatDate(file.modified)}</td>
+              {/if}
 
-          <div class="file-actions">
-            {#if moonraker.state.print.filename === file.path && printActive}
-              <span class="printing-pill">{i18n.t('printing_now')}</span>
-            {:else}
-              <button 
-                class="btn btn-success btn-sm" 
-                disabled={printActive}
-                onclick={() => startPrint(file.path)}
-              >
-                <Icon name="play" /> {i18n.t('print_action')}
-              </button>
-            {/if}
+              <td class="td-actions">
+                <div class="file-actions">
+                  {#if moonraker.state.print.filename === file.path && printActive}
+                    <span class="printing-pill">{i18n.t('printing_now')}</span>
+                  {:else}
+                    <button
+                      class="btn btn-success btn-sm"
+                      disabled={printActive}
+                      onclick={() => startPrint(file.path)}
+                    >
+                      <Icon name="play" /> {i18n.t('print_action')}
+                    </button>
+                  {/if}
 
-            <button 
-              class="btn-delete" 
-              onclick={() => deleteFile(file.path)}
-              title={i18n.t('delete_action')}
-            >
-              <Icon name="trash" />
-            </button>
-          </div>
-        </div>
-      {/each}
+                  <button
+                    class="btn-delete"
+                    onclick={() => deleteFile(file.path)}
+                    title={i18n.t('delete_action')}
+                  >
+                    <Icon name="trash" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </div>
   {/if}
 </div>
@@ -338,85 +415,109 @@
     user-select: none;
   }
 
-  .files-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .file-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+  .table-responsive {
+    overflow-x: auto;
     background: #18191c;
     border: 1px solid #282a30;
     border-radius: 8px;
-    padding: 10px 14px;
-    transition: background 0.15s ease;
-  }
-  .file-card:hover {
-    background: #1f2126;
-  }
-  .file-card.active-print {
-    border-color: #0284c7;
-    background: rgba(2, 132, 199, 0.08);
   }
 
-  .thumb-container {
-    width: 52px;
-    height: 52px;
+  .files-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    text-align: left;
+  }
+
+  th {
+    background: #151619;
+    color: #9ca3af;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 10px 12px;
+    border-bottom: 1px solid #282a30;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #25272e;
+    vertical-align: middle;
+    color: #e5e7eb;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .file-row:hover {
+    background: #1f2126;
+  }
+  .file-row.active-print {
+    background: rgba(2, 132, 199, 0.08);
+    box-shadow: inset 3px 0 0 #0284c7;
+  }
+
+  .th-preview, .td-preview {
+    width: 56px;
+  }
+
+  .thumb-img,
+  .thumb-fallback {
+    width: 44px;
+    height: 44px;
     border-radius: 6px;
     background: #111215;
     border: 1px solid #282a30;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-
-  .thumb-img {
-    width: 100%;
-    height: 100%;
     object-fit: contain;
   }
 
   .thumb-fallback {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     opacity: 0.5;
   }
 
-  .file-details {
-    flex: 1;
-    min-width: 0;
+  /* Takes the space left by the other columns; long names are ellipsized. */
+  .td-filename {
+    width: 100%;
+    max-width: 0;
+    min-width: 180px;
   }
 
   .file-title {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: #f3f4f6;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 4px;
+    white-space: nowrap;
   }
 
-  .file-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.75rem;
-    color: #9ca3af;
+  .sub {
+    font-size: 0.7rem;
   }
 
-  .est-badge {
+  .est {
     color: #38bdf8;
-    font-weight: 500;
+  }
+
+  .text-muted { color: #9ca3af; }
+  .text-right { text-align: right; }
+  .font-mono { font-family: monospace; }
+
+  .td-actions {
+    width: 1%;
   }
 
   .file-actions {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
   }
 

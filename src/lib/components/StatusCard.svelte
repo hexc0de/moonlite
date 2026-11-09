@@ -4,6 +4,7 @@
   import { moonraker } from '../moonraker.svelte';
   import { i18n } from '../i18n.svelte';
   import { ui } from '../ui.svelte';
+  import { printCounts } from '../printCounts.svelte';
 
   interface RecentFile {
     filename: string;
@@ -284,6 +285,15 @@
                     <span class="sep">&nbsp;|&nbsp;</span>
                   {/if}
                   <span>{i18n.t('print_time')}: {file.estimated_time ? formatTime(file.estimated_time) : '—'}</span>
+                  {#if printCounts.get(file.path)}
+                    {@const count = printCounts.get(file.path)!}
+                    <span class="sep">&nbsp;|&nbsp;</span>
+                    <span
+                      class="recent-count"
+                      class:printed={count.completed > 0}
+                      title={i18n.t('print_count_hint', { ok: count.completed, failed: count.failed })}
+                    >{i18n.t('printed_times', { count: count.completed })}</span>
+                  {/if}
                 </div>
               </div>
 
@@ -595,6 +605,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-top: 2px;
+  }
+
+  .recent-count.printed {
+    color: #22c55e;
   }
 
   .recent-play-btn {

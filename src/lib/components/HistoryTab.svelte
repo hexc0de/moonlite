@@ -4,6 +4,11 @@
   import { moonraker } from '../moonraker.svelte';
   import { i18n } from '../i18n.svelte';
   import { ui, errorMessage } from '../ui.svelte';
+  import { printCounts } from '../printCounts.svelte';
+  import { ColumnSet } from '../columns.svelte';
+  import ColumnPicker from './ColumnPicker.svelte';
+  import MaterialTag from './MaterialTag.svelte';
+  import PrintCount from './PrintCount.svelte';
 
   interface HistoryThumbnail {
     width: number;
@@ -17,6 +22,7 @@
     slicer_version?: string;
     filament_name?: string;
     filament_type?: string;
+    filament_colors?: string[];
     estimated_time?: number;
     layer_height?: number;
     layer_count?: number;
@@ -66,6 +72,19 @@
   /** How many recent jobs feed the charts and the search/filter view. */
   const RECENT_LIMIT = 200;
   let totalJobsCount = $state(0);
+
+  // Optional table columns (preview, filename and actions are always shown).
+  const columns = new ColumnSet('moonlite_cols_history', [
+    { id: 'status', label: 'col_status' },
+    { id: 'date', label: 'col_date' },
+    { id: 'prints', label: 'col_prints' },
+    { id: 'material', label: 'col_material' },
+    { id: 'est', label: 'col_est_time', visible: false },
+    { id: 'actual', label: 'col_print_time' },
+    { id: 'filament', label: 'col_filament' },
+    { id: 'slicer', label: 'col_slicer', visible: false },
+  ]);
+  let colspan = $derived(3 + columns.count);
 
   // Chart Metric Toggle
   let chartMetric = $state<'filament' | 'time'>('filament');
@@ -249,11 +268,13 @@
     }
   }
 
-  async function handleDeleteJob(jobId: string) {
+  async function handleDeleteJob(job: HistoryJob) {
+    const jobId = job.job_id;
     if (!(await ui.confirm(i18n.t('confirm_delete_history'), { danger: true }))) return;
     try {
       // Falls back to HTTP only while the WebSocket is down; throws on any failure.
       await moonraker.request('server.history.delete_job', { uid: jobId }, { verb: 'DELETE', path: '/server/history/job' });
+      printCounts.forget(job);
       jobs = jobs.filter(j => j.job_id !== jobId);
       allRecentJobs = allRecentJobs.filter(j => j.job_id !== jobId);
       if (totalJobsCount > 0) totalJobsCount--;
@@ -484,6 +505,8 @@
             {i18n.t('filter_cancelled')}
           </button>
         </div>
+
+        <ColumnPicker {columns} />
       </div>
     </div>
 
@@ -494,25 +517,27 @@
           <tr>
             <th class="th-preview">{i18n.t('col_preview')}</th>
             <th class="th-filename">{i18n.t('col_filename')}</th>
-            <th class="th-status">{i18n.t('col_status')}</th>
-            <th class="th-date">{i18n.t('col_date')}</th>
-            <th class="th-est">{i18n.t('col_est_time')}</th>
-            <th class="th-actual">{i18n.t('col_print_time')}</th>
-            <th class="th-filament">{i18n.t('col_filament')}</th>
-            <th class="th-slicer">{i18n.t('col_slicer')}</th>
+            {#if columns.has('status')}<th class="th-status">{i18n.t('col_status')}</th>{/if}
+            {#if columns.has('date')}<th class="th-date">{i18n.t('col_date')}</th>{/if}
+            {#if columns.has('prints')}<th class="th-prints">{i18n.t('col_prints')}</th>{/if}
+            {#if columns.has('material')}<th class="th-material">{i18n.t('col_material')}</th>{/if}
+            {#if columns.has('est')}<th class="th-est">{i18n.t('col_est_time')}</th>{/if}
+            {#if columns.has('actual')}<th class="th-actual">{i18n.t('col_print_time')}</th>{/if}
+            {#if columns.has('filament')}<th class="th-filament">{i18n.t('col_filament')}</th>{/if}
+            {#if columns.has('slicer')}<th class="th-slicer">{i18n.t('col_slicer')}</th>{/if}
             <th class="th-actions text-right">{i18n.t('col_actions')}</th>
           </tr>
         </thead>
         <tbody>
           {#if loading && jobs.length === 0}
             <tr>
-              <td colspan="9" class="td-empty">
+              <td {colspan} class="td-empty">
                 <span class="spin"><Icon name="refresh" /></span> {i18n.t('loading_history')}
               </td>
             </tr>
           {:else if filteredJobs.length === 0}
             <tr>
-              <td colspan="9" class="td-empty">
+              <td {colspan} class="td-empty">
                 {i18n.t('no_history_records')}
               </td>
             </tr>
@@ -536,12 +561,13 @@
                   </div>
                   {#if job.metadata?.filament_name}
                     <div class="sub-filament-tag">
-                      <Icon name="spool" /> {job.metadata.filament_name}{job.metadata.filament_type ? ` (${job.metadata.filament_type})` : ''}
+                      <Icon name="spool" /> {job.metadata.filament_name}
                     </div>
                   {/if}
                 </td>
 
                 <!-- 3. Status Badge -->
+                {#if columns.has('status')}
                 <td class="td-status">
                   {#if job.status === 'completed'}
                     <span class="badge badge-completed"><Icon name="check" /> {i18n.t('status_completed')}</span>
@@ -553,18 +579,36 @@
                     <span class="badge badge-error"><Icon name="alert" /> {i18n.t('status_error')}</span>
                   {/if}
                 </td>
+                {/if}
 
                 <!-- 4. Date & Time -->
+                {#if columns.has('date')}
                 <td class="td-date font-mono">
                   {formatShortDate(job.start_time)}
                 </td>
+                {/if}
+
+                <!-- Print count of this file -->
+                {#if columns.has('prints')}
+                <td class="td-prints"><PrintCount filename={job.filename} /></td>
+                {/if}
+
+                <!-- Material -->
+                {#if columns.has('material')}
+                <td class="td-material">
+                  <MaterialTag type={job.metadata?.filament_type} colors={job.metadata?.filament_colors} />
+                </td>
+                {/if}
 
                 <!-- 5. Estimated Time -->
+                {#if columns.has('est')}
                 <td class="td-est font-mono text-muted">
                   {job.metadata?.estimated_time ? formatDuration(job.metadata.estimated_time) : '—'}
                 </td>
+                {/if}
 
                 <!-- 6. Actual Print Time -->
+                {#if columns.has('actual')}
                 <td class="td-actual font-mono">
                   <span class="actual-time">{formatDuration(job.print_duration)}</span>
                   {#if job.metadata?.estimated_time && job.print_duration > 0}
@@ -576,16 +620,20 @@
                     {/if}
                   {/if}
                 </td>
+                {/if}
 
                 <!-- 7. Filament Used (Length & Weight) -->
+                {#if columns.has('filament')}
                 <td class="td-filament font-mono">
                   <div>{formatFilament(job.filament_used)}</div>
                   {#if job.metadata?.filament_weight_total}
                     <div class="sub-weight text-muted">{job.metadata.filament_weight_total.toFixed(1)}g</div>
                   {/if}
                 </td>
+                {/if}
 
                 <!-- 8. Slicer Tag -->
+                {#if columns.has('slicer')}
                 <td class="td-slicer text-muted">
                   {#if job.metadata?.slicer}
                     <span class="slicer-pill">
@@ -595,6 +643,7 @@
                     —
                   {/if}
                 </td>
+                {/if}
 
                 <!-- 9. Actions (Reprint & Delete) -->
                 <td class="td-actions text-right">
@@ -610,7 +659,7 @@
                     <button 
                       class="btn-action-delete" 
                       title={i18n.t('delete_entry_btn')} 
-                      onclick={() => handleDeleteJob(job.job_id)}
+                      onclick={() => handleDeleteJob(job)}
                     >
                       <Icon name="trash" />
                     </button>
@@ -1112,6 +1161,10 @@
 
   .td-filename {
     max-width: 280px;
+  }
+
+  .td-date, .td-actual, .td-est, .td-filament {
+    white-space: nowrap;
   }
 
   .file-name-line {
