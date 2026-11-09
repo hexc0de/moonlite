@@ -198,14 +198,16 @@
     </div>
     
     <div class="header-actions">
-      {#if print.state === 'printing'}
-        <button class="btn-action btn-pause" onclick={() => moonraker.pausePrint()} title={i18n.t('pause_print')}>
-          <Icon name="pause" />
-        </button>
-      {:else if print.state === 'paused'}
-        <button class="btn-action btn-resume" onclick={() => moonraker.resumePrint()} title={i18n.t('resume_print')}>
-          <Icon name="play" />
-        </button>
+      {#if print.state === 'printing' || print.state === 'paused'}
+        {#if print.state === 'printing'}
+          <button class="btn-action btn-pause" onclick={() => moonraker.pausePrint()} title={i18n.t('pause_print')}>
+            <Icon name="pause" />
+          </button>
+        {:else}
+          <button class="btn-action btn-resume" onclick={() => moonraker.resumePrint()} title={i18n.t('resume_print')}>
+            <Icon name="play" />
+          </button>
+        {/if}
         <button class="btn-action btn-cancel" onclick={handleCancel} title={i18n.t('cancel_print')}>
           <Icon name="stop" />
         </button>
