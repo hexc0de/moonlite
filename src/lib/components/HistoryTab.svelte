@@ -59,6 +59,9 @@
     longest_print: number;
   }
 
+  /** Called after a reprint was started successfully (the app switches to the dashboard). */
+  let { onPrintStarted }: { onPrintStarted?: () => void } = $props();
+
   let totals = $state<JobTotals | null>(null);
   let allRecentJobs = $state<HistoryJob[]>([]);
   let jobs = $state<HistoryJob[]>([]);
@@ -264,6 +267,7 @@
     if (await ui.confirm(i18n.t('confirm_reprint', { name: filename }))) {
       if (await moonraker.startPrint(filename)) {
         ui.notify(i18n.t('print_started', { name: filename }), 'success');
+        onPrintStarted?.();
       }
     }
   }

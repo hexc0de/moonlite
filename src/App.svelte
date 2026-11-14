@@ -152,11 +152,11 @@
         </div>
       {:else if currentTab === 'files'}
         <div class="tab-wrapper">
-          <FilesTab />
+          <FilesTab onPrintStarted={() => switchTab('dashboard')} />
         </div>
       {:else if currentTab === 'history'}
         <div class="tab-wrapper">
-          <HistoryTab />
+          <HistoryTab onPrintStarted={() => switchTab('dashboard')} />
         </div>
       {:else if currentTab === 'bedmesh'}
         <div class="tab-wrapper">

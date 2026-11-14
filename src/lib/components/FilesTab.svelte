@@ -24,6 +24,9 @@
     slicer?: string;
   }
 
+  /** Called after a print was started successfully (the app switches to the dashboard). */
+  let { onPrintStarted }: { onPrintStarted?: () => void } = $props();
+
   const GCODE_EXT = /\.(gcode|gco|g)$/i;
 
   // Optional table columns (preview, filename and actions are always shown).
@@ -154,7 +157,7 @@
       return;
     }
     if (await ui.confirm(i18n.t('confirm_print_start', { name: filename }))) {
-      moonraker.startPrint(filename);
+      if (await moonraker.startPrint(filename)) onPrintStarted?.();
     }
   }
 
