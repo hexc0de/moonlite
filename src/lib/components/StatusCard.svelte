@@ -215,11 +215,7 @@
       {:else if print.state === 'complete' || print.state === 'cancelled' || print.state === 'error'}
         <!-- Mainsail-style Clear & Reprint actions for finished print -->
         <button class="btn-action btn-clear" onclick={handleResetFile} title={i18n.t('clear_state_btn')}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="m19.5 4.5-11 11" />
-            <path d="m14 2 8 8" />
-            <path d="M12 14c-1.5 1.5-2.5 3.5-3 6-2-1-4-3-5-5 2.5-.5 4.5-1.5 6-3l2 2z" />
-          </svg>
+          <Icon name="brush-cleaning" />
         </button>
 
         {#if print.filename}
