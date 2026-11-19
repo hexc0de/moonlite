@@ -13,6 +13,46 @@
     moonraker.move(axis, distance);
   }
 
+  // Position boxes double as inputs: type a coordinate, Enter moves there, Esc/blur discards.
+  type Axis = 'X' | 'Y' | 'Z';
+  const AXES: { axis: Axis; index: number; digits: number }[] = [
+    { axis: 'X', index: 0, digits: 2 },
+    { axis: 'Y', index: 1, digits: 2 },
+    { axis: 'Z', index: 2, digits: 3 },
+  ];
+  let drafts = $state<Record<Axis, string | null>>({ X: null, Y: null, Z: null });
+
+  function current(index: number): number {
+    return toolhead.position?.[index] ?? 0;
+  }
+
+  function isHomed(axis: Axis): boolean {
+    return (toolhead.homed_axes ?? '').toLowerCase().includes(axis.toLowerCase());
+  }
+
+  function commitPosition(axis: Axis, index: number) {
+    const raw = drafts[axis];
+    drafts[axis] = null;
+    if (raw === null || isLocked || !isHomed(axis)) return;
+    const target = Number(raw.trim().replace(',', '.'));
+    if (raw.trim() === '' || !Number.isFinite(target)) return;
+    // Relative move by the difference: lands exactly on the shown toolhead
+    // coordinate regardless of G-code offsets (babystep, SET_GCODE_OFFSET).
+    const delta = Math.round((target - current(index)) * 1000) / 1000;
+    if (delta !== 0) moonraker.move(axis, delta);
+  }
+
+  function onPositionKey(e: KeyboardEvent, axis: Axis, index: number) {
+    const input = e.currentTarget as HTMLInputElement;
+    if (e.key === 'Enter') {
+      commitPosition(axis, index);
+      input.blur();
+    } else if (e.key === 'Escape') {
+      drafts[axis] = null;
+      input.blur();
+    }
+  }
+
   function home(axes: string = '') {
     if (isLocked) return;
     moonraker.home(axes);
@@ -45,18 +85,32 @@
 
   <!-- Coordinates Bar -->
   <div class="coords-row">
-    <div class="coord-box">
-      <span class="axis-lbl">X</span>
-      <span class="axis-val">{toolhead.position?.[0]?.toFixed(2) || '0.00'}</span>
-    </div>
-    <div class="coord-box">
-      <span class="axis-lbl">Y</span>
-      <span class="axis-val">{toolhead.position?.[1]?.toFixed(2) || '0.00'}</span>
-    </div>
-    <div class="coord-box">
-      <span class="axis-lbl">Z</span>
-      <span class="axis-val">{toolhead.position?.[2]?.toFixed(3) || '0.000'}</span>
-    </div>
+    {#each AXES as { axis, index, digits } (axis)}
+      {@const homed = isHomed(axis)}
+      <label
+        class="coord-box"
+        class:editing={drafts[axis] !== null}
+        title={isLocked ? i18n.t('hint_locked_moves') : homed ? i18n.t('hint_position_input') : i18n.t('hint_home_axis_first')}
+      >
+        <span class="axis-lbl">{axis}</span>
+        <input
+          class="axis-val"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          spellcheck="false"
+          disabled={isLocked || !homed}
+          value={drafts[axis] ?? current(index).toFixed(digits)}
+          onfocus={(e) => {
+            drafts[axis] = current(index).toFixed(digits);
+            (e.currentTarget as HTMLInputElement).select();
+          }}
+          oninput={(e) => (drafts[axis] = (e.currentTarget as HTMLInputElement).value)}
+          onkeydown={(e) => onPositionKey(e, axis, index)}
+          onblur={() => (drafts[axis] = null)}
+        />
+      </label>
+    {/each}
   </div>
 
   <!-- Homing & Align buttons -->
@@ -195,6 +249,18 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
+    cursor: text;
+    transition: border-color 0.1s ease;
+  }
+  .coord-box:hover:has(input:not(:disabled)) {
+    border-color: #374151;
+  }
+  .coord-box.editing {
+    border-color: #38bdf8;
+  }
+  .coord-box:has(input:disabled) {
+    cursor: default;
   }
 
   .axis-lbl {
@@ -208,6 +274,24 @@
     font-size: 0.95rem;
     font-weight: 700;
     color: #38bdf8;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    min-width: 0;
+    text-align: right;
+    cursor: inherit;
+  }
+  .axis-val:disabled {
+    /* Still readable when locked/unhomed; just not editable. */
+    color: #38bdf8;
+    opacity: 1;
+    -webkit-text-fill-color: #38bdf8;
+  }
+  .coord-box.editing .axis-val {
+    color: #f3f4f6;
   }
 
   .home-actions-bar {

@@ -270,6 +270,8 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // Hints, alt texts and short labels
     hint_locked_moves: 'Movement disabled during active printing',
     hint_ztilt: 'Z-Tilt adjust (Z_TILT_ADJUST)',
+    hint_position_input: 'Type a coordinate and press Enter to move there',
+    hint_home_axis_first: 'Home the axis first',
     motors_off_short: 'Motors Off',
     switch_on: 'ON',
     switch_off: 'OFF',
@@ -548,6 +550,8 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // Hints, alt texts and short labels
     hint_locked_moves: 'Перемещение отключено во время печати',
     hint_ztilt: 'Выравнивание оси Z (Z_TILT_ADJUST)',
+    hint_position_input: 'Введите координату и нажмите Enter, чтобы переместиться',
+    hint_home_axis_first: 'Сначала выполните парковку оси',
     motors_off_short: 'Откл. моторы',
     switch_on: 'ВКЛ',
     switch_off: 'ВЫКЛ',
@@ -826,6 +830,8 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // Hints, alt texts and short labels
     hint_locked_moves: 'Ruch wyłączony podczas drukowania',
     hint_ztilt: 'Wyrównanie osi Z (Z_TILT_ADJUST)',
+    hint_position_input: 'Wpisz współrzędną i naciśnij Enter, aby tam przejechać',
+    hint_home_axis_first: 'Najpierw zbazuj oś',
     motors_off_short: 'Wyłącz silniki',
     switch_on: 'WŁ',
     switch_off: 'WYŁ',
@@ -1104,6 +1110,8 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // Hints, alt texts and short labels
     hint_locked_moves: 'Ruch adklučany padčas druku',
     hint_ztilt: 'Vyraŭnoŭvańnie vosi Z (Z_TILT_ADJUST)',
+    hint_position_input: 'Uviadzicie kaardynatu i naciśnicie Enter, kab tudy pierajechać',
+    hint_home_axis_first: 'Spačatku zrabicie parkoŭku vosi',
     motors_off_short: 'Adkł. matory',
     switch_on: 'UKŁ',
     switch_off: 'VYKŁ',
