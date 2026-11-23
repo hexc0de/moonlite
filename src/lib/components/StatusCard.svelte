@@ -59,6 +59,21 @@
     return eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   });
 
+  // Weight used so far, scaled from the slicer's planned length/weight (same filament, so linear).
+  let filamentUsedWeight = $derived(
+    print.filament_total && print.filament_weight_total
+      ? (print.filament_used / print.filament_total) * print.filament_weight_total
+      : null,
+  );
+
+  let filamentHint = $derived(
+    i18n.t('filament_used_hint', {
+      used: (print.filament_used / 1000).toFixed(2),
+      total: print.filament_total ? (print.filament_total / 1000).toFixed(2) : '—',
+      weight: print.filament_weight_total ? Math.round(print.filament_weight_total) : '—',
+    }),
+  );
+
   let totalLayers = $derived(print.info?.total_layer || print.layer_count || 0);
 
   // Prefer the layer reported by the slicer via SET_PRINT_STATS_INFO; otherwise estimate from Z.
@@ -348,9 +363,14 @@
         <span class="stat-label">{i18n.t('stat_flow')}</span>
         <span class="stat-val font-mono">{Math.round((moonraker.state.gcode_move?.extrude_factor || 1) * 100)}%</span>
       </div>
-      <div class="stat-cell">
+      <div class="stat-cell" title={filamentHint}>
         <span class="stat-label">{i18n.t('stat_filament')}</span>
         <span class="stat-val font-mono">{(print.filament_used / 1000).toFixed(2)} m</span>
+        {#if filamentUsedWeight !== null}
+          <span class="stat-sub font-mono">{Math.round(filamentUsedWeight)} / {Math.round(print.filament_weight_total ?? 0)} g</span>
+        {:else if print.filament_total}
+          <span class="stat-sub font-mono">/ {(print.filament_total / 1000).toFixed(2)} m</span>
+        {/if}
       </div>
       <div class="stat-cell">
         <span class="stat-label">{i18n.t('stat_layer')}</span>
@@ -751,6 +771,13 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: #f3f4f6;
+    white-space: nowrap;
+  }
+
+  .stat-sub {
+    margin-top: -2px;
+    font-size: 0.72rem;
+    color: #9ca3af;
     white-space: nowrap;
   }
 

@@ -21,6 +21,9 @@ export interface PrinterState {
     first_layer_height?: number;
     filament_type?: string;
     slicer?: string;
+    /** Slicer plan for the whole file: length in mm, weight in g. */
+    filament_total?: number;
+    filament_weight_total?: number;
   };
   display_status: {
     progress: number;
@@ -660,6 +663,8 @@ class MoonrakerClient {
     p.first_layer_height = undefined;
     p.filament_type = undefined;
     p.slicer = undefined;
+    p.filament_total = undefined;
+    p.filament_weight_total = undefined;
     if (filename) this.fetchFileMetadata(filename);
   }
 
@@ -676,6 +681,8 @@ class MoonrakerClient {
       if (res.first_layer_height) p.first_layer_height = res.first_layer_height;
       if (res.filament_type) p.filament_type = res.filament_type;
       if (res.slicer) p.slicer = res.slicer;
+      if (res.filament_total) p.filament_total = res.filament_total;
+      if (res.filament_weight_total) p.filament_weight_total = res.filament_weight_total;
       p.thumbnail = this.thumbnailUrl(filename, res.thumbnails, 'largest');
     } catch {
       // metadata optional
