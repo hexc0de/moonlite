@@ -57,6 +57,10 @@ export interface PrinterState {
     speed_factor: number;
     extrude_factor: number;
   };
+  /** Live extruder speed in mm/s of filament (negative while retracting). */
+  motion: {
+    live_extruder_velocity: number;
+  };
   sensors: Record<string, { temperature?: number; target?: number; power?: number }>;
   /** Optional peripherals. A field stays undefined when the printer has no such object. */
   misc: {
@@ -225,6 +229,7 @@ class MoonrakerClient {
       speed_factor: 1,
       extrude_factor: 1,
     },
+    motion: { live_extruder_velocity: 0 },
     sensors: {},
     misc: {},
   });
@@ -501,6 +506,7 @@ class MoonrakerClient {
       this.state.print = emptyPrint();
       this.state.sensors = {};
       this.state.misc = {};
+      this.state.motion = { live_extruder_velocity: 0 };
       if (sub?.status) {
         this.applyStatusUpdate(sub.status);
       }
@@ -514,7 +520,7 @@ class MoonrakerClient {
     }
   }
 
-  private buildSubscription(available: string[]): Record<string, null> {
+  private buildSubscription(available: string[]): Record<string, string[] | null> {
     const has = new Set(available);
     const find = (pred: (name: string) => boolean) => available.find(pred) ?? null;
 
@@ -532,7 +538,10 @@ class MoonrakerClient {
       ...available.filter((n) => n.startsWith('temperature_sensor ') || n.startsWith('temperature_host ')),
       ...Object.values(this.objects).filter((n): n is string => n !== null),
     ];
-    return Object.fromEntries(names.map((n) => [n, null]));
+    const objects: Record<string, string[] | null> = Object.fromEntries(names.map((n) => [n, null]));
+    // Only the extruder speed: live_position would push an update on every poll.
+    if (has.has('motion_report')) objects.motion_report = ['live_extruder_velocity'];
+    return objects;
   }
 
   private handleMessage(raw: string) {
@@ -633,6 +642,7 @@ class MoonrakerClient {
     if (update.toolhead) Object.assign(this.state.toolhead, update.toolhead);
     if (update.fan) Object.assign(this.state.fan, update.fan);
     if (update.gcode_move) Object.assign(this.state.gcode_move, update.gcode_move);
+    if (update.motion_report) Object.assign(this.state.motion, update.motion_report);
 
     // Dynamic temperature sensors
     for (const [key, val] of Object.entries(update)) {

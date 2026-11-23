@@ -59,6 +59,12 @@
     return eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   });
 
+  // Volumetric flow (mm³/s) = filament speed × filament cross-section (1.75 mm filament).
+  const FILAMENT_AREA = Math.PI * (1.75 / 2) ** 2;
+  let volumetricFlow = $derived(
+    Math.max(0, (moonraker.state.motion?.live_extruder_velocity ?? 0) * FILAMENT_AREA),
+  );
+
   // Weight used so far, scaled from the slicer's planned length/weight (same filament, so linear).
   let filamentUsedWeight = $derived(
     print.filament_total && print.filament_weight_total
@@ -359,9 +365,10 @@
         <span class="stat-label">{i18n.t('stat_speed')}</span>
         <span class="stat-val font-mono">{Math.round((moonraker.state.gcode_move?.speed_factor || 1) * 100)}%</span>
       </div>
-      <div class="stat-cell">
+      <div class="stat-cell" title={i18n.t('flow_hint')}>
         <span class="stat-label">{i18n.t('stat_flow')}</span>
-        <span class="stat-val font-mono">{Math.round((moonraker.state.gcode_move?.extrude_factor || 1) * 100)}%</span>
+        <span class="stat-val font-mono">{volumetricFlow.toFixed(1)} mm³/s</span>
+        <span class="stat-sub font-mono">{Math.round((moonraker.state.gcode_move?.extrude_factor || 1) * 100)}%</span>
       </div>
       <div class="stat-cell" title={filamentHint}>
         <span class="stat-label">{i18n.t('stat_filament')}</span>

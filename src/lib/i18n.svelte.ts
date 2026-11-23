@@ -53,6 +53,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // StatusCard metrics
     stat_speed: 'Speed',
     stat_flow: 'Flow',
+    flow_hint: 'Volumetric flow right now (filament 1.75 mm); below: flow multiplier (M221)',
     stat_filament: 'Filament',
     filament_used_hint: 'Used: {used} m of {total} m planned ({weight} g)',
     stat_layer: 'Layer',
@@ -334,6 +335,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // StatusCard metrics
     stat_speed: 'Скорость',
     stat_flow: 'Поток',
+    flow_hint: 'Объёмный расход прямо сейчас (пруток 1.75 мм); ниже: множитель потока (M221)',
     stat_filament: 'Филамент',
     filament_used_hint: 'Израсходовано: {used} м из {total} м по плану ({weight} г)',
     stat_layer: 'Слой',
@@ -615,6 +617,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // StatusCard metrics
     stat_speed: 'Prędkość',
     stat_flow: 'Przepływ',
+    flow_hint: 'Bieżący przepływ objętościowy (filament 1.75 mm); niżej: mnożnik przepływu (M221)',
     stat_filament: 'Filament',
     filament_used_hint: 'Zużyto: {used} m z {total} m wg planu ({weight} g)',
     stat_layer: 'Warstwa',
@@ -896,6 +899,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     // StatusCard metrics
     stat_speed: 'Chutkaść',
     stat_flow: 'Patok',
+    flow_hint: 'Biahučy abjomny patok (prutok 1.75 mm); nižej: množnik patoku (M221)',
     stat_filament: 'Fiłamient',
     filament_used_hint: 'Vydatkavana: {used} m z {total} m pavodle planu ({weight} g)',
     stat_layer: 'Słoj',
