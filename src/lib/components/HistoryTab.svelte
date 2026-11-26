@@ -9,6 +9,7 @@
   import ColumnPicker from './ColumnPicker.svelte';
   import MaterialTag from './MaterialTag.svelte';
   import PrintCount from './PrintCount.svelte';
+  import ThumbPreview from './ThumbPreview.svelte';
 
   interface HistoryThumbnail {
     width: number;
@@ -548,11 +549,12 @@
           {:else}
             {#each filteredJobs as job (job.job_id)}
               {@const thumbUrl = getThumbnailUrl(job)}
+              {@const thumbLarge = moonraker.thumbnailUrl(job.filename, job.metadata?.thumbnails, 'largest')}
               <tr class="job-row">
                 <!-- 1. 3D Model Thumbnail -->
                 <td class="td-preview">
                   {#if thumbUrl}
-                    <img src={thumbUrl} alt={i18n.t('col_preview')} class="job-thumb" />
+                    <ThumbPreview small={thumbUrl} large={thumbLarge} alt={i18n.t('col_preview')} />
                   {:else}
                     <div class="thumb-placeholder"><Icon name="model" /></div>
                   {/if}
@@ -1140,15 +1142,6 @@
   .th-preview, .td-preview {
     width: 50px;
     text-align: center;
-  }
-
-  .job-thumb {
-    width: 42px;
-    height: 42px;
-    border-radius: 6px;
-    object-fit: cover;
-    background: #151619;
-    border: 1px solid #282a30;
   }
 
   .thumb-placeholder {

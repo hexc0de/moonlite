@@ -1,12 +1,17 @@
 <script lang="ts">
   // Small model thumbnail; hovering it shows the large slicer thumbnail in a floating card.
   // The large image is only requested on the first hover.
+  import Icon from './Icon.svelte';
+
   let { small, large, alt }: { small: string; large?: string; alt: string } = $props();
 
   const SIZE = 260; // popup image box, px
   const GAP = 12;
 
   let pos = $state<{ left: number; top: number } | null>(null);
+  // Thumbnails of deleted files (e.g. old history jobs) 404: show the placeholder instead.
+  let failedSrc = $state<string | null>(null);
+  let failed = $derived(failedSrc === small);
 
   function show(e: MouseEvent) {
     if (!large) return;
@@ -32,9 +37,24 @@
   });
 </script>
 
-<img src={small} {alt} class="thumb-img" class:zoomable={!!large} onmouseenter={show} onmouseleave={hide} />
+{#if failed}
+  <div class="thumb-img thumb-missing"><Icon name="model" /></div>
+{:else}
+  <img
+    src={small}
+    {alt}
+    class="thumb-img"
+    class:zoomable={!!large}
+    onmouseenter={show}
+    onmouseleave={hide}
+    onerror={() => {
+      failedSrc = small;
+      pos = null;
+    }}
+  />
+{/if}
 
-{#if pos && large}
+{#if pos && large && !failed}
   <div class="thumb-popup" style:left="{pos.left}px" style:top="{pos.top}px" style:--size="{SIZE}px">
     <img src={large} {alt} />
   </div>
@@ -49,7 +69,15 @@
     border: 1px solid #282a30;
     object-fit: contain;
     display: block;
+    margin: 0 auto;
     transition: border-color 0.1s ease;
+  }
+  .thumb-missing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #6b7280;
   }
   .thumb-img.zoomable {
     cursor: zoom-in;
