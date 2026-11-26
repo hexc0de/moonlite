@@ -9,6 +9,7 @@
   import ColumnPicker from './ColumnPicker.svelte';
   import MaterialTag from './MaterialTag.svelte';
   import PrintCount from './PrintCount.svelte';
+  import ThumbPreview from './ThumbPreview.svelte';
 
   interface GcodeFile {
     path: string;
@@ -16,6 +17,7 @@
     size: number;
     estimated_time?: number;
     thumbnail?: string;
+    thumbnailLarge?: string;
     filament_type?: string;
     filament_colors?: string[];
     filament_total?: number;
@@ -83,6 +85,7 @@
         if (meta && f) {
           f.estimated_time = meta.estimated_time;
           f.thumbnail = moonraker.thumbnailUrl(path, meta.thumbnails, 'small');
+          f.thumbnailLarge = moonraker.thumbnailUrl(path, meta.thumbnails, 'largest');
           f.filament_type = meta.filament_type;
           f.filament_colors = meta.filament_colors;
           f.filament_total = meta.filament_total;
@@ -261,7 +264,7 @@
             <tr class="file-row" class:active-print={moonraker.state.print.filename === file.path}>
               <td class="td-preview">
                 {#if file.thumbnail}
-                  <img src={file.thumbnail} alt={i18n.t('col_preview')} class="thumb-img" />
+                  <ThumbPreview small={file.thumbnail} large={file.thumbnailLarge} alt={i18n.t('col_preview')} />
                 {:else}
                   <div class="thumb-fallback"><Icon name="model" /></div>
                 {/if}
@@ -467,7 +470,6 @@
     width: 56px;
   }
 
-  .thumb-img,
   .thumb-fallback {
     width: 44px;
     height: 44px;
