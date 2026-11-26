@@ -3,7 +3,7 @@
   // The large image is only requested on the first hover.
   import Icon from './Icon.svelte';
 
-  let { small, large, alt }: { small: string; large?: string; alt: string } = $props();
+  let { small, large, alt, size = 44 }: { small: string; large?: string; alt: string; size?: number } = $props();
 
   const SIZE = 260; // popup image box, px
   const GAP = 12;
@@ -38,12 +38,13 @@
 </script>
 
 {#if failed}
-  <div class="thumb-img thumb-missing"><Icon name="model" /></div>
+  <div class="thumb-img thumb-missing" style:--thumb="{size}px"><Icon name="model" /></div>
 {:else}
   <img
     src={small}
     {alt}
     class="thumb-img"
+    style:--thumb="{size}px"
     class:zoomable={!!large}
     onmouseenter={show}
     onmouseleave={hide}
@@ -62,8 +63,9 @@
 
 <style>
   .thumb-img {
-    width: 44px;
-    height: 44px;
+    width: var(--thumb);
+    height: var(--thumb);
+    flex-shrink: 0;
     border-radius: 6px;
     background: #111215;
     border: 1px solid #282a30;

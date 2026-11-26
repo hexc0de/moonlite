@@ -5,6 +5,7 @@
   import { i18n } from '../i18n.svelte';
   import { ui } from '../ui.svelte';
   import { printCounts } from '../printCounts.svelte';
+  import ThumbPreview from './ThumbPreview.svelte';
 
   interface RecentFile {
     filename: string;
@@ -15,6 +16,7 @@
     filament_total?: number;
     filament_weight?: number;
     thumbnail?: string;
+    thumbnailLarge?: string;
   }
 
   function formatTime(seconds: number): string {
@@ -153,6 +155,7 @@
             filament_total: meta?.filament_total,
             filament_weight: meta?.filament_weight_total,
             thumbnail: moonraker.thumbnailUrl(f.path, meta?.thumbnails, 'small'),
+            thumbnailLarge: moonraker.thumbnailUrl(f.path, meta?.thumbnails, 'largest'),
           };
         }),
       );
@@ -281,13 +284,11 @@
               onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleStartRecentPrint(file.path); }}
               title={i18n.t('start_print_named', { name: file.filename })}
             >
-              <div class="recent-thumb-box">
-                {#if file.thumbnail}
-                  <img src={file.thumbnail} alt={i18n.t('col_preview')} class="recent-thumb-img" />
-                {:else}
-                  <div class="recent-thumb-fallback"><Icon name="model" /></div>
-                {/if}
-              </div>
+              {#if file.thumbnail}
+                <ThumbPreview small={file.thumbnail} large={file.thumbnailLarge} alt={i18n.t('col_preview')} size={36} />
+              {:else}
+                <div class="recent-thumb-box"><Icon name="model" /></div>
+              {/if}
 
               <div class="recent-meta-col">
                 <div class="recent-filename" title={file.filename}>
@@ -597,13 +598,7 @@
     justify-content: center;
   }
 
-  .recent-thumb-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .recent-thumb-fallback {
+  .recent-thumb-box {
     font-size: 1rem;
   }
 
